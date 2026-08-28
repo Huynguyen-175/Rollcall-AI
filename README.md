@@ -1,4 +1,6 @@
 <img width="1672" height="941" alt="rollcall-ai-social-preview-v2" src="https://github.com/user-attachments/assets/8f32808e-490b-4b57-9c8a-2e7bdc4bd2a9" />
+
+
 # Rollcall AI
 
 Rollcall AI is a speed-first web interface for real-time Teamfight Tactics planning. Players can drop a shop, board, carousel, augment, or opponent screenshot and receive concise, timer-friendly decisions.
