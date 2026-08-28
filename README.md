@@ -1,3 +1,7 @@
+<img width="1672" height="941" alt="image" src="https://github.com/user-attachments/assets/615ffe0a-5f99-4d47-bed1-bd982f3b8d18" />
+
+
+
 # Rollcall AI
 
 [Open the live web app](https://rollcall-ai-tft.goldenyrboy.chatgpt.site)
