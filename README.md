@@ -1,7 +1,3 @@
-<img width="1672" height="941" alt="image" src="https://github.com/user-attachments/assets/615ffe0a-5f99-4d47-bed1-bd982f3b8d18" />
-
-
-
 # Rollcall AI
 
 [Open the live web app](https://rollcall-ai-tft.goldenyrboy.chatgpt.site)
@@ -16,6 +12,7 @@ Rollcall AI is a speed-first web interface for real-time Teamfight Tactics plann
 - Economy floor and stop-condition guidance
 - Roll-down target tracking
 - Responsive dark esports-style interface
+- Optional Personal API key tab for visitors using their own OpenAI account
 
 The app sends an uploaded screenshot to a vision-model endpoint and returns a concise next move. The hosted deployment needs an `OPENAI_API_KEY` secret configured by the site owner; visitors do not need to add their own key.
 
