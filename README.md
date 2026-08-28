@@ -1,15 +1,8 @@
-<img width="1672" height="941" alt="rollcall-ai-social-preview-v2" src="https://github.com/user-attachments/assets/8f32808e-490b-4b57-9c8a-2e7bdc4bd2a9" />
-
-
 # Rollcall AI
 
+[Open the live web app](https://rollcall-ai-tft-copilot.anhhoanggy.chatgpt.site)
+
 Rollcall AI is a speed-first web interface for real-time Teamfight Tactics planning. Players can drop a shop, board, carousel, augment, or opponent screenshot and receive concise, timer-friendly decisions.
-
-## Live web app
-
-### **[Launch Rollcall AI →](https://rollcall-ai-tft-copilot.anhhoanggy.chatgpt.site)**
-
-The hosted web app is publicly accessible in a browser and does not require a ChatGPT account. Upload a screenshot, choose Normal or Fast mode, and run the decision flow.
 
 ## Current prototype
 
@@ -20,7 +13,7 @@ The hosted web app is publicly accessible in a browser and does not require a Ch
 - Roll-down target tracking
 - Responsive dark esports-style interface
 
-The current decision response is demonstration data. Production screenshot recognition and live strategic analysis still require a vision-model backend and current-set data.
+The app sends an uploaded screenshot to a vision-model endpoint and returns a concise next move. The hosted deployment needs an `OPENAI_API_KEY` secret configured by the site owner; visitors do not need to add their own key.
 
 ## Local development
 
@@ -58,7 +51,7 @@ npm run build
 
 ## Deployment
 
-The public web app is hosted with OpenAI Sites: [Launch Rollcall AI](https://rollcall-ai-tft-copilot.anhhoanggy.chatgpt.site).
+The public deployment is hosted with OpenAI Sites. Visitors can open the live link above and upload a screenshot directly in their browser.
 
 ## Disclaimer
 
