@@ -1,6 +1,6 @@
 # Rollcall AI
 
-[Open the live web app](https://rollcall-ai-tft-copilot.anhhoanggy.chatgpt.site)
+[Open the live web app](https://rollcall-ai-tft.anhhoanggy.chatgpt.site)
 
 Rollcall AI is a speed-first web interface for real-time Teamfight Tactics planning. Players can drop a shop, board, carousel, augment, or opponent screenshot and receive concise, timer-friendly decisions.
 
