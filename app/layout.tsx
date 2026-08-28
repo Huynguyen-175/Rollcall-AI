@@ -18,13 +18,13 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Rollcall AI — Live TFT Copilot',
     description: 'Drop your screen. Get the next move before the timer runs out.',
-    images: [{ url: 'https://rollcall-ai-tft.anhhoanggy.chatgpt.site/og.jpg', width: 1280, height: 640 }],
+    images: [{ url: 'https://rollcall-ai-tft.goldenyrboy.chatgpt.site/og.jpg', width: 1280, height: 640 }],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Rollcall AI — Live TFT Copilot',
     description: 'Drop your screen. Get the next move before the timer runs out.',
-    images: ['https://rollcall-ai-tft.anhhoanggy.chatgpt.site/og.jpg'],
+    images: ['https://rollcall-ai-tft.goldenyrboy.chatgpt.site/og.jpg'],
   },
 };
 
