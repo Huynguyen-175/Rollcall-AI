@@ -4,7 +4,7 @@ Rollcall AI is a speed-first web interface for real-time Teamfight Tactics plann
 
 ## Live web app
 
-### **[Launch Rollcall AI →](https://rollcall-ai-tft-copilot.bolahghg.chatgpt.site)**
+### **[Launch Rollcall AI →](https://rollcall-ai-tft-copilot.anhhoanggy.chatgpt.site)**
 
 The hosted web app is publicly accessible in a browser and does not require a ChatGPT account. Upload a screenshot, choose Normal or Fast mode, and run the decision flow.
 
@@ -55,7 +55,7 @@ npm run build
 
 ## Deployment
 
-The public web app is hosted with OpenAI Sites: [Launch Rollcall AI](https://rollcall-ai-tft-copilot.bolahghg.chatgpt.site).
+The public web app is hosted with OpenAI Sites: [Launch Rollcall AI](https://rollcall-ai-tft-copilot.anhhoanggy.chatgpt.site).
 
 ## Disclaimer
 
