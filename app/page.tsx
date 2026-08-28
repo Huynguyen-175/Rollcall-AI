@@ -3,6 +3,8 @@
 import { useRef, useState } from 'react';
 import { Camera, ChevronRight, Crosshair, ImagePlus, Radio, Settings2, Sparkles, TimerReset, Upload, X } from 'lucide-react';
 
+const officialGameplayImage = '/tft-gameplay.jpg';
+
 const targets = [{ name: 'Kog’Maw 2★', done: true }, { name: 'Vi 2★', done: false }, { name: 'Frontline upgrade', done: false }];
 
 export default function Home() {
@@ -11,8 +13,31 @@ export default function Home() {
   const [mode, setMode] = useState<'normal' | 'fast'>('normal');
   const [analyzing, setAnalyzing] = useState(false);
   const [analyzed, setAnalyzed] = useState(false);
-  function choose(file?: File) { if (!file) return; setPreview(URL.createObjectURL(file)); setAnalyzed(false); }
-  function analyze() { if (!preview) return; setAnalyzing(true); window.setTimeout(() => { setAnalyzing(false); setAnalyzed(true); }, 850); }
+  const [imageData, setImageData] = useState<string | null>(null);
+  const [analysisText, setAnalysisText] = useState('');
+  const [errorText, setErrorText] = useState('');
+  function choose(file?: File) {
+    if (!file || !file.type.startsWith('image/')) return;
+    setPreview(URL.createObjectURL(file));
+    setAnalyzed(false);
+    setErrorText('');
+    const reader = new FileReader();
+    reader.onload = () => setImageData(typeof reader.result === 'string' ? reader.result : null);
+    reader.readAsDataURL(file);
+  }
+  async function analyze() {
+    if (!imageData || analyzing) return;
+    setAnalyzing(true); setAnalyzed(false); setErrorText('');
+    try {
+      const response = await fetch('/api/analyze', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ image: imageData, mode }) });
+      const payload = await response.json() as { analysis?: string; error?: string };
+      if (!response.ok) throw new Error(payload.error || 'Analysis failed.');
+      setAnalysisText(payload.analysis || 'No decision returned.');
+      setAnalyzed(true);
+    } catch (error) {
+      setErrorText(error instanceof Error ? error.message : 'Analysis failed.');
+    } finally { setAnalyzing(false); }
+  }
   return (
     <main className="min-h-screen bg-[#080b12] text-slate-100">
       <header className="sticky top-0 z-20 border-b border-white/8 bg-[#080b12]/90 backdrop-blur-xl"><div className="mx-auto flex h-16 max-w-[1500px] items-center justify-between px-4 sm:px-6">
@@ -23,16 +48,22 @@ export default function Home() {
         <section className="space-y-4"><div className="rounded-2xl border border-white/8 bg-[#0d111b] p-4 sm:p-5">
           <div className="mb-4 flex items-start justify-between gap-3"><div><div className="flex items-center gap-2"><Camera className="text-violet-400" size={18}/><h1 className="text-lg font-extrabold">Shop Screenshot Decision Mode</h1></div><p className="mt-1 text-xs text-slate-500">Drop your screen. Get the next move before the timer runs out.</p></div><div className="flex rounded-lg bg-black/30 p-1 text-[10px] font-extrabold uppercase tracking-wider"><button onClick={() => setMode('normal')} className={`rounded-md px-3 py-1.5 transition ${mode === 'normal' ? 'bg-slate-700 text-white' : 'text-slate-500'}`}>Normal</button><button onClick={() => setMode('fast')} className={`rounded-md px-3 py-1.5 transition ${mode === 'fast' ? 'bg-amber-400 text-slate-950' : 'text-slate-500'}`}>Fast</button></div></div>
           <input ref={inputRef} type="file" accept="image/*" className="hidden" onChange={(e) => choose(e.target.files?.[0])}/>
-          <div onClick={() => inputRef.current?.click()} onDragOver={(e) => e.preventDefault()} onDrop={(e) => {e.preventDefault(); choose(e.dataTransfer.files?.[0]);}} className="group relative grid min-h-[360px] cursor-pointer place-items-center overflow-hidden rounded-xl border border-dashed border-violet-400/30 bg-[radial-gradient(circle_at_50%_0%,rgba(124,92,255,.13),transparent_45%)] transition hover:border-violet-400/70">
-            {preview ? <img src={preview} alt="Selected TFT screenshot" className="absolute inset-0 h-full w-full bg-black/40 object-contain"/> : <div className="text-center"><div className="mx-auto mb-4 grid h-16 w-16 place-items-center rounded-2xl border border-violet-400/20 bg-violet-400/10 text-violet-300 transition group-hover:scale-105"><ImagePlus size={28}/></div><p className="font-bold">Drop a TFT screenshot here</p><p className="mt-1 text-xs text-slate-500">Shop, board, carousel, augments, or opponent</p><span className="mt-5 inline-flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-xs font-bold"><Upload size={14}/> Choose screenshot</span></div>}
-            {preview && <button onClick={(e) => {e.stopPropagation(); setPreview(null); setAnalyzed(false);}} className="absolute right-3 top-3 rounded-full bg-black/70 p-2 text-white"><X size={15}/></button>}
+          <div onClick={() => inputRef.current?.click()} onDragOver={(e) => e.preventDefault()} onDrop={(e) => {e.preventDefault(); choose(e.dataTransfer.files?.[0]);}} className="group relative grid min-h-[360px] cursor-pointer place-items-center overflow-hidden rounded-xl border border-dashed border-violet-400/35 bg-[#070a10] transition hover:border-cyan-300/65">
+            {preview ? <img src={preview} alt="Selected TFT screenshot" className="absolute inset-0 h-full w-full bg-black/40 object-contain"/> : <>
+              <img src={officialGameplayImage} alt="Official Teamfight Tactics gameplay board" className="absolute inset-0 h-full w-full object-cover opacity-45 transition duration-500 group-hover:scale-[1.02] group-hover:opacity-55"/>
+              <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(7,10,16,.34),rgba(7,10,16,.82)),radial-gradient(circle_at_50%_42%,rgba(8,11,18,.08),rgba(8,11,18,.76))]"/>
+              <div className="relative z-10 max-w-sm px-5 text-center"><div className="mx-auto mb-4 grid h-16 w-16 place-items-center rounded-2xl border border-cyan-300/25 bg-[#090c14]/80 text-cyan-200 shadow-[0_0_35px_rgba(34,211,238,.18)] backdrop-blur-md transition group-hover:scale-105"><ImagePlus size={28}/></div><p className="text-lg font-extrabold text-white drop-shadow-lg">Drop a TFT screenshot here</p><p className="mt-1 text-xs font-medium text-slate-300">Shop, board, carousel, augments, or opponent</p><span className="mt-5 inline-flex items-center gap-2 rounded-lg border border-white/15 bg-[#090c14]/75 px-4 py-2 text-xs font-bold text-white shadow-xl backdrop-blur-md"><Upload size={14}/> Choose screenshot</span></div>
+              <a href="https://teamfighttactics.leagueoflegends.com/en-us/news/riot-games/teamfight-tactics-mobile-update/" target="_blank" rel="noreferrer" onClick={(e) => e.stopPropagation()} className="absolute bottom-3 right-3 z-10 rounded-full border border-white/10 bg-black/55 px-2.5 py-1 text-[9px] font-semibold text-slate-300 backdrop-blur-md transition hover:text-white">Official TFT gameplay · Riot Games</a>
+            </>}
+            {preview && <button onClick={(e) => {e.stopPropagation(); setPreview(null); setImageData(null); setAnalyzed(false); setErrorText(''); if (inputRef.current) inputRef.current.value = '';}} className="absolute right-3 top-3 rounded-full bg-black/70 p-2 text-white"><X size={15}/></button>}
           </div>
           <button onClick={analyze} disabled={!preview || analyzing} className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-violet-500 to-indigo-500 py-3.5 text-sm font-extrabold shadow-[0_12px_40px_rgba(112,79,255,.22)] transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-35"><Sparkles size={17}/>{analyzing ? 'Reading board state…' : mode === 'fast' ? 'Analyze — FAST NOW' : 'Analyze next move'}<ChevronRight size={16}/></button>
         </div><div className="grid grid-cols-2 gap-3 sm:grid-cols-5">{[['42','GOLD'],['7','LEVEL'],['4-1','STAGE'],['58','HP'],['2W','STREAK']].map(([v,l],i)=><div key={l} className="rounded-xl border border-white/8 bg-[#0d111b] px-4 py-3"><p className={`text-xl font-black ${i===0?'text-amber-300':''}`}>{v}</p><p className="mt-0.5 text-[9px] font-bold tracking-[.18em] text-slate-600">{l}</p></div>)}</div></section>
         <aside className="space-y-4"><div className="overflow-hidden rounded-2xl border border-violet-400/20 bg-[#0d111b]"><div className="flex items-center justify-between border-b border-white/8 bg-violet-500/8 px-5 py-4"><div className="flex items-center gap-2"><span className="h-2 w-2 animate-pulse rounded-full bg-violet-400"/><h2 className="text-xs font-extrabold uppercase tracking-[.18em]">Do now</h2></div><span className="text-[10px] font-bold text-slate-500">BOARD: <b className="text-emerald-300">STRONG</b></span></div><div className="space-y-3 p-5">
           {!analyzed && !analyzing && <div className="py-9 text-center"><TimerReset className="mx-auto mb-3 text-slate-700" size={30}/><p className="text-sm font-bold text-slate-400">Your call appears here</p><p className="mt-1 text-xs text-slate-600">Upload a screenshot to start coaching.</p></div>}
           {analyzing && <div className="space-y-3 py-5">{[90,70,82,55].map(w=><div key={w} className="h-10 animate-pulse rounded-lg bg-white/5" style={{width:`${w}%`}}/>)}</div>}
-          {analyzed && <><Decision label="BUY" value="Kog’Maw, Vi" tone="green" note="Vi completes 2★"/><Decision label="SKIP" value="Ahri, Sett" tone="muted"/><Decision label="SELL" value="Gnar if bench full" tone="red"/><Decision label="ROLL" value="1–2 more" tone="violet"/><Decision label="LEVEL" value="No — preserve 40g" tone="muted"/><div className="mt-4 rounded-xl border border-amber-300/25 bg-amber-300/8 p-3"><p className="text-[10px] font-extrabold uppercase tracking-widest text-amber-300">Stop condition</p><p className="mt-1 text-sm font-bold">STOP AT 30G <span className="text-slate-500">or Vi 2★</span></p></div></>}
+          {errorText && <div className="rounded-xl border border-rose-400/25 bg-rose-400/10 p-4 text-sm font-semibold text-rose-200"><p className="text-[10px] font-extrabold uppercase tracking-widest text-rose-300">Analysis unavailable</p><p className="mt-1">{errorText}</p></div>}
+          {analyzed && <div className="rounded-xl border border-emerald-400/20 bg-emerald-400/[.04] p-4"><p className="mb-3 text-[10px] font-extrabold uppercase tracking-widest text-emerald-300">Vision model decision</p><pre className="whitespace-pre-wrap font-sans text-sm font-bold leading-7 text-slate-100">{analysisText}</pre></div>}
         </div></div>
         <div className="rounded-2xl border border-white/8 bg-[#0d111b] p-5"><div className="mb-4 flex items-center justify-between"><h2 className="text-xs font-extrabold uppercase tracking-[.18em]">Roll-down targets</h2><span className="text-[10px] text-slate-600">1 / 3 hit</span></div><div className="space-y-2">{targets.map(t=><div key={t.name} className="flex items-center gap-3 rounded-lg bg-white/[.025] p-3"><span className={`grid h-5 w-5 place-items-center rounded-full text-[11px] ${t.done?'bg-emerald-400 text-slate-950':'border border-white/15 text-slate-600'}`}>{t.done?'✓':''}</span><span className={`text-xs font-bold ${t.done?'text-slate-500 line-through':'text-slate-300'}`}>{t.name}</span></div>)}</div></div>
         <div className="rounded-2xl border border-white/8 bg-[#0d111b] p-5"><h2 className="text-xs font-extrabold uppercase tracking-[.18em]">Economy path</h2><div className="mt-4 flex items-center gap-3"><div className="grid h-12 w-12 place-items-center rounded-xl bg-amber-300/10 text-lg font-black text-amber-300">42g</div><ChevronRight className="text-slate-700"/><div><p className="text-sm font-extrabold">Hold 30g floor</p><p className="text-[11px] text-slate-500">Rebuild to 50g after stable</p></div></div></div></aside>
