@@ -16,6 +16,8 @@ export default function Home() {
   const [imageData, setImageData] = useState<string | null>(null);
   const [analysisText, setAnalysisText] = useState('');
   const [errorText, setErrorText] = useState('');
+  const [personalApiKey, setPersonalApiKey] = useState('');
+  const [activeTab, setActiveTab] = useState<'coach' | 'api'>('coach');
   function choose(file?: File) {
     if (!file || !file.type.startsWith('image/')) return;
     setPreview(URL.createObjectURL(file));
@@ -29,7 +31,7 @@ export default function Home() {
     if (!imageData || analyzing) return;
     setAnalyzing(true); setAnalyzed(false); setErrorText('');
     try {
-      const response = await fetch('/api/analyze', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ image: imageData, mode }) });
+      const response = await fetch('/api/analyze', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ image: imageData, mode, apiKey: personalApiKey || undefined }) });
       const payload = await response.json() as { analysis?: string; error?: string };
       if (!response.ok) throw new Error(payload.error || 'Analysis failed.');
       setAnalysisText(payload.analysis || 'No decision returned.');
@@ -42,8 +44,12 @@ export default function Home() {
     <main className="min-h-screen bg-[#080b12] text-slate-100">
       <header className="sticky top-0 z-20 border-b border-white/8 bg-[#080b12]/90 backdrop-blur-xl"><div className="mx-auto flex h-16 max-w-[1500px] items-center justify-between px-4 sm:px-6">
         <div className="flex items-center gap-3"><div className="grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-br from-violet-500 to-cyan-400 shadow-[0_0_30px_rgba(124,92,255,.3)]"><Crosshair size={19}/></div><div><p className="text-[15px] font-extrabold tracking-tight">ROLLCALL <span className="text-cyan-300">AI</span></p><p className="text-[9px] font-semibold uppercase tracking-[.23em] text-slate-500">Live TFT Copilot</p></div></div>
-        <div className="flex items-center gap-2"><span className="hidden items-center gap-2 rounded-full border border-emerald-400/20 bg-emerald-400/8 px-3 py-1.5 text-[11px] font-bold text-emerald-300 sm:flex"><Radio size={12}/> LIVE SESSION</span><button aria-label="Settings" className="rounded-lg border border-white/8 p-2 text-slate-400 transition hover:bg-white/5 hover:text-white"><Settings2 size={17}/></button></div>
+        <div className="flex items-center gap-2"><span className="hidden items-center gap-2 rounded-full border border-emerald-400/20 bg-emerald-400/8 px-3 py-1.5 text-[11px] font-bold text-emerald-300 sm:flex"><Radio size={12}/> LIVE SESSION</span><button onClick={() => setActiveTab('api')} aria-label="Personal API key" className="rounded-lg border border-white/8 p-2 text-slate-400 transition hover:bg-white/5 hover:text-white"><Settings2 size={17}/></button></div>
       </div></header>
+      <div className="mx-auto flex max-w-[1500px] gap-2 px-4 pt-4 sm:px-6"><button onClick={() => setActiveTab('coach')} className={`rounded-lg px-4 py-2 text-xs font-extrabold ${activeTab === 'coach' ? 'bg-violet-500 text-white' : 'border border-white/10 text-slate-400'}`}>TFT Coach</button><button onClick={() => setActiveTab('api')} className={`rounded-lg px-4 py-2 text-xs font-extrabold ${activeTab === 'api' ? 'bg-cyan-400 text-slate-950' : 'border border-white/10 text-slate-400'}`}>Personal API key</button></div>
+      {activeTab === 'api' && <div className="mx-auto max-w-[1500px] px-4 pt-4 sm:px-6"><section className="rounded-2xl border border-cyan-300/20 bg-[#0d111b] p-5"><h1 className="text-lg font-extrabold">Use your own OpenAI API key</h1><p className="mt-1 max-w-2xl text-xs leading-5 text-slate-400">Your key stays in this browser tab, is sent only when you analyze a screenshot, and is never saved to GitHub or the site. Refreshing the page clears it.</p><label className="mt-4 block text-xs font-bold text-slate-300" htmlFor="personal-api-key">OpenAI API key</label><input id="personal-api-key" type="password" value={personalApiKey} onChange={(e) => setPersonalApiKey(e.target.value)} placeholder="sk-…" autoComplete="off" className="mt-2 w-full max-w-xl rounded-lg border border-white/10 bg-black/30 px-3 py-3 font-mono text-sm text-white outline-none focus:border-cyan-300/60"/><p className="mt-3 text-[11px] text-amber-200/80">Only use a key you created and control. OpenAI usage and billing apply to your account.</p></section></div>}
+      {activeTab === 'api' && <div className="mx-auto max-w-[1500px] px-4 pt-3 sm:px-6"><button onClick={() => setActiveTab('coach')} className="text-xs font-bold text-cyan-300 hover:text-white">← Back to TFT Coach</button></div>}
+      {activeTab === 'coach' && <>
       <div className="mx-auto grid max-w-[1500px] gap-4 p-4 sm:p-6 xl:grid-cols-[minmax(0,1.45fr)_minmax(360px,.75fr)]">
         <section className="space-y-4"><div className="rounded-2xl border border-white/8 bg-[#0d111b] p-4 sm:p-5">
           <div className="mb-4 flex items-start justify-between gap-3"><div><div className="flex items-center gap-2"><Camera className="text-violet-400" size={18}/><h1 className="text-lg font-extrabold">Shop Screenshot Decision Mode</h1></div><p className="mt-1 text-xs text-slate-500">Drop your screen. Get the next move before the timer runs out.</p></div><div className="flex rounded-lg bg-black/30 p-1 text-[10px] font-extrabold uppercase tracking-wider"><button onClick={() => setMode('normal')} className={`rounded-md px-3 py-1.5 transition ${mode === 'normal' ? 'bg-slate-700 text-white' : 'text-slate-500'}`}>Normal</button><button onClick={() => setMode('fast')} className={`rounded-md px-3 py-1.5 transition ${mode === 'fast' ? 'bg-amber-400 text-slate-950' : 'text-slate-500'}`}>Fast</button></div></div>
@@ -68,6 +74,7 @@ export default function Home() {
         <div className="rounded-2xl border border-white/8 bg-[#0d111b] p-5"><div className="mb-4 flex items-center justify-between"><h2 className="text-xs font-extrabold uppercase tracking-[.18em]">Roll-down targets</h2><span className="text-[10px] text-slate-600">1 / 3 hit</span></div><div className="space-y-2">{targets.map(t=><div key={t.name} className="flex items-center gap-3 rounded-lg bg-white/[.025] p-3"><span className={`grid h-5 w-5 place-items-center rounded-full text-[11px] ${t.done?'bg-emerald-400 text-slate-950':'border border-white/15 text-slate-600'}`}>{t.done?'✓':''}</span><span className={`text-xs font-bold ${t.done?'text-slate-500 line-through':'text-slate-300'}`}>{t.name}</span></div>)}</div></div>
         <div className="rounded-2xl border border-white/8 bg-[#0d111b] p-5"><h2 className="text-xs font-extrabold uppercase tracking-[.18em]">Economy path</h2><div className="mt-4 flex items-center gap-3"><div className="grid h-12 w-12 place-items-center rounded-xl bg-amber-300/10 text-lg font-black text-amber-300">42g</div><ChevronRight className="text-slate-700"/><div><p className="text-sm font-extrabold">Hold 30g floor</p><p className="text-[11px] text-slate-500">Rebuild to 50g after stable</p></div></div></div></aside>
       </div>
+      </>}
     </main>
   );
 }
